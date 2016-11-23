@@ -22,7 +22,7 @@ var App = _react2['default'].createClass({
     displayName: 'App',
 
     render: function render() {
-        return _react2['default'].createElement('div', null, _react2['default'].createElement(_reactTelephoneInput2['default'], { defaultCountry: 'us', preferredCountries: ['us', 'ca', 'zz', 'hk'] }));
+        return _react2['default'].createElement('div', null, _react2['default'].createElement(_reactTelephoneInput2['default'], { defaultCountry: 'us', preferredCountries: ['us', 'ca', 'zz', 'hk'] }), _react2['default'].createElement(_reactTelephoneInput2['default'], { defaultCountry: 'us', preferredCountries: ['us', 'ca', 'zz', 'hk'], placeholder: 'Please input a phone number...' }));
     }
 });
 
