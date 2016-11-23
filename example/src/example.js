@@ -9,7 +9,16 @@ var App = React.createClass({
     render() {
         return (
             <div>
-                <ReactTelephoneInput defaultCountry='us' preferredCountries={['us', 'ca', 'zz', 'hk']} />
+                <ReactTelephoneInput
+                	defaultCountry='us'
+                	preferredCountries={['us', 'ca', 'zz', 'hk']}
+                />
+                <ReactTelephoneInput
+                	defaultCountry='ca'
+                	initialValue=''
+                	preferredCountries={['ca', 'us', 'zz', 'hk']}
+                	placeholder='Please input a phone number...'
+                />
             </div>
         );
     }

@@ -26,7 +26,6 @@ var countryData = require('./country_data.js')
 // var countryData = require('country-telephone-data')
 var allCountries = countryData.allCountries;
 var iso2Lookup = countryData.iso2Lookup;
-var allCountryCodes = countryData.allCountryCodes;
 
 
 if (typeof document !== 'undefined') {
@@ -64,6 +63,7 @@ function isNumberValid(inputNumber) {
         return assign(
             {},
             {
+                placeholder: this.props.placeholder,
                 preferredCountries: preferredCountries,
                 showDropDown: false,
                 queryString: '',
@@ -81,13 +81,13 @@ function isNumberValid(inputNumber) {
         onlyCountries: React.PropTypes.arrayOf(React.PropTypes.object),
         preferredCountries: React.PropTypes.arrayOf(React.PropTypes.string),
         classNames: React.PropTypes.string,
-	inputId: React.PropTypes.string,
         onChange: React.PropTypes.func,
         onEnterKeyPress: React.PropTypes.func,
         onBlur: React.PropTypes.func,
         onFocus: React.PropTypes.func,
         disabled: React.PropTypes.bool,
         pattern: React.PropTypes.string,
+        placeholder: React.PropTypes.string
     },
     getDefaultProps() {
         return {
@@ -103,7 +103,7 @@ function isNumberValid(inputNumber) {
         };
     },
     getNumber() {
-        return this.state.formattedNumber !== '+' ? this.state.formattedNumber : '';
+        return this.state.formattedNumber !== '' ? this.state.formattedNumber : '';
     },
     getValue() {
         return this.getNumber();
@@ -167,7 +167,7 @@ function isNumberValid(inputNumber) {
     },
     formatNumber(text, pattern) {
         if(!text || text.length === 0) {
-            return '+';
+            return '';
         }
 
         // for all strings with length less than 3, just return it (1, 2 etc.)
@@ -213,34 +213,19 @@ function isNumberValid(inputNumber) {
     // memoize results based on the first 5/6 characters. That is all that matters
     guessSelectedCountry: memoize(function(inputNumber) {
         var secondBestGuess = findWhere(allCountries, {iso2: this.props.defaultCountry}) || this.props.onlyCountries[0];
-	var inputNumberForCountries = inputNumber.substr(0, 4);
-        if (trim(inputNumber) !== '') {
-            var bestGuess = reduce(this.props.onlyCountries, function (selectedCountry, country) {
+        if(trim(inputNumber) !== '') {
+            var bestGuess = reduce(this.props.onlyCountries, function(selectedCountry, country) {
+                            if(startsWith(inputNumber, country.dialCode)) {
+                                if(country.dialCode.length > selectedCountry.dialCode.length) {
+                                    return country;
+                                }
+                                if(country.dialCode.length === selectedCountry.dialCode.length && country.priority < selectedCountry.priority) {
+                                    return country;
+                                }
+                            }
 
-                // if the country dialCode exists WITH area code
-
-                if (allCountryCodes[inputNumberForCountries] && allCountryCodes[inputNumberForCountries][0] === country.iso2) {
-                    return country;
-
-                // if the selected country dialCode is there with the area code
-
-                } else if (allCountryCodes[inputNumberForCountries] && allCountryCodes[inputNumberForCountries][0] === selectedCountry.iso2) {
-                    return selectedCountry;
-
-                // else do the original if statement
-                    
-                } else {
-                    if (startsWith(inputNumber, country.dialCode)) {
-                        if (country.dialCode.length > selectedCountry.dialCode.length) {
-                            return country;
-                        }
-                        if (country.dialCode.length === selectedCountry.dialCode.length && country.priority < selectedCountry.priority) {
-                            return country;
-                        }
-                    }
-                }
-                return selectedCountry;
-            }, { dialCode: '', priority: 10001 }, this);
+                            return selectedCountry;
+                        }, {dialCode: '', priority: 10001}, this);
         } else {
             return secondBestGuess;
         }
@@ -390,7 +375,7 @@ function isNumberValid(inputNumber) {
     },
     _fillDialCode() {
         // if the input is blank, insert dial code of the selected country
-        if(this.refs.numberInput.value === '+') {
+        if(this.refs.numberInput.value === '') {
             this.setState({formattedNumber: '+' + this.state.selectedCountry.dialCode});
         }
     },
@@ -419,7 +404,6 @@ function isNumberValid(inputNumber) {
     searchCountry() {
         const probableCandidate = this._searchCountry(this.state.queryString) || this.props.onlyCountries[0];
         const probableCandidateIndex = findIndex(this.props.onlyCountries, probableCandidate) + this.state.preferredCountries.length;
-console.log('probableCandidateIndex', probableCandidateIndex)
         this.scrollTo(this.getElement(probableCandidateIndex), true);
 
         this.setState({
@@ -549,10 +533,7 @@ console.log('probableCandidateIndex', probableCandidateIndex)
         });
 
         var inputFlagClasses = `flag ${this.state.selectedCountry.iso2}`;
-        let otherProps = {}
-        if(this.props.inputId) {
-            otherProps.id = this.props.inputId
-        }
+
         return (
             <div className={classNames('react-tel-input', this.props.classNames)}>
                 <input
@@ -568,7 +549,7 @@ console.log('probableCandidateIndex', probableCandidateIndex)
                     autoComplete='tel'
                     pattern={this.props.pattern}
                     placeholder={this.state.placeholder}
-                    disabled={this.props.disabled} {...otherProps}/>
+                    disabled={this.props.disabled}/>
                 <div ref='flagDropDownButton' className={flagViewClasses} onKeyDown={this.handleKeydown} >
                     <div ref='selectedFlag' onClick={this.handleFlagDropdownClick} className='selected-flag' title={`${this.state.selectedCountry.name}: + ${this.state.selectedCountry.dialCode}`}>
                         <div className={inputFlagClasses} style={this.getFlagStyle()}>
