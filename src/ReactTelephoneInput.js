@@ -341,10 +341,10 @@ function isNumberValid(inputNumber) {
           this.setState({showDropDown: false});
         }
     },
-    handleInputFocus() {
+    handleInputFocus(event) {
         // trigger parent component's onFocus handler
         if(typeof this.props.onFocus === 'function') {
-            this.props.onFocus(this.state.formattedNumer, this.state.selectedCountry);
+            this.props.onFocus(event, this.state.formattedNumer, this.state.selectedCountry);
         }
 
         this._fillDialCode();
